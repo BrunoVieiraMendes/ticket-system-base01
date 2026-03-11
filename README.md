@@ -1,4 +1,4 @@
-# 🎫 TicketFlow — Sistema de Gestão de Chamados
+# 🎫 Sistema de Gestão de Chamados
 
 Sistema completo de fila de chamados com SLA, agentes, filas e autenticação.
 
