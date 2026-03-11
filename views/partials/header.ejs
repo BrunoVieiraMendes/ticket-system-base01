@@ -1,0 +1,61 @@
+<header class="top-header">
+  <div class="header-left">
+    <button class="mobile-toggle" id="mobileSidebarToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="header-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="globalSearch" placeholder="Buscar chamados..." autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <% if (user && (user.role === 'admin' || user.role === 'agent')) { %>
+    <div class="header-stat">
+      <a href="/tickets?slaStatus=breached" class="stat-pill stat-danger" id="slaBreachCounter" title="SLAs Violados">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="slaBreachCount">0</span>
+      </a>
+    </div>
+    <% } %>
+
+    <div class="notification-btn" id="notifBtn" title="Notificações">
+      <i class="fas fa-bell"></i>
+      <span class="notif-dot" id="notifDot" style="display:none"></span>
+    </div>
+
+    <div class="header-user" id="userMenuBtn">
+      <div class="user-avatar-sm" style="background: <%= user && user.role === 'admin' ? '#ef4444' : user && user.role === 'agent' ? '#6366f1' : '#22c55e' %>">
+        <%= user ? user.name.charAt(0).toUpperCase() : '?' %>
+      </div>
+      <span class="header-username"><%= user ? user.name.split(' ')[0] : '' %></span>
+      <i class="fas fa-chevron-down" style="font-size:11px; margin-left:4px; opacity:0.6"></i>
+    </div>
+
+    <div class="user-dropdown" id="userDropdown">
+      <div class="dropdown-header">
+        <strong><%= user ? user.name : '' %></strong>
+        <small><%= user ? user.email : '' %></small>
+      </div>
+      <a href="/users/profile" class="dropdown-item"><i class="fas fa-user"></i> Meu Perfil</a>
+      <a href="/tickets/create" class="dropdown-item"><i class="fas fa-plus"></i> Novo Chamado</a>
+      <% if (user && user.role === 'admin') { %>
+      <a href="/admin" class="dropdown-item"><i class="fas fa-cog"></i> Administração</a>
+      <% } %>
+      <hr class="dropdown-divider">
+      <a href="/logout" class="dropdown-item dropdown-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>Notificações</span>
+      <button id="clearNotifs" onclick="clearNotifications()">Limpar</button>
+    </div>
+    <div class="notif-list" id="notifList">
+      <div class="notif-empty">Nenhuma notificação</div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,5 @@
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/ticket_system
+JWT_SECRET=seu_jwt_secret_super_seguro_aqui_2024
+SESSION_SECRET=seu_session_secret_super_seguro_aqui_2024
+NODE_ENV=development

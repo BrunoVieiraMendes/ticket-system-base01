@@ -1,0 +1,107 @@
+<div class="auth-container auth-register">
+  <div class="auth-panel auth-panel-wide">
+    <div class="auth-brand">
+      <div class="auth-logo">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <h1>TicketFlow</h1>
+      <p>Crie sua conta</p>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <h2>Criar conta</h2>
+        <p>Preencha seus dados para começar</p>
+      </div>
+
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="alert alert-danger">
+          <ul style="margin:0; padding-left: 16px">
+            <% errors.forEach(e => { %>
+              <li><%= e.msg %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form action="/register" method="POST" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Nome completo *</label>
+            <input type="text" name="name" class="form-control"
+              value="<%= typeof formData !== 'undefined' ? formData.name || '' : '' %>"
+              placeholder="Seu nome completo" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email *</label>
+            <input type="email" name="email" class="form-control"
+              value="<%= typeof formData !== 'undefined' ? formData.email || '' : '' %>"
+              placeholder="seu@email.com" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Senha *</label>
+            <div class="input-password">
+              <input type="password" id="password" name="password" class="form-control"
+                placeholder="Mínimo 6 caracteres" required minlength="6">
+              <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <i class="fas fa-eye" id="password-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Confirmar senha *</label>
+            <div class="input-password">
+              <input type="password" id="password2" name="password2" class="form-control"
+                placeholder="Repita a senha" required>
+              <button type="button" class="password-toggle" onclick="togglePassword('password2')">
+                <i class="fas fa-eye" id="password2-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-phone"></i> Telefone</label>
+            <input type="text" name="phone" class="form-control"
+              value="<%= typeof formData !== 'undefined' ? formData.phone || '' : '' %>"
+              placeholder="(11) 99999-9999">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-building"></i> Empresa</label>
+            <input type="text" name="company" class="form-control"
+              value="<%= typeof formData !== 'undefined' ? formData.company || '' : '' %>"
+              placeholder="Nome da empresa">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fas fa-briefcase"></i> Departamento</label>
+          <input type="text" name="department" class="form-control"
+            value="<%= typeof formData !== 'undefined' ? formData.department || '' : '' %>"
+            placeholder="Ex: TI, RH, Financeiro">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-auth">
+          <i class="fas fa-user-plus"></i> Criar conta
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Já tem uma conta? <a href="/login">Fazer login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  const eye = document.getElementById(id + '-eye');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  eye.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+</script>

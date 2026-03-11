@@ -1,0 +1,107 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Painel Administrativo</h1>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card stat-card-blue">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-info"><h3><%= totalUsers %></h3><p>Total Usuários</p></div>
+    <div class="stat-trend"><a href="/users" class="stat-link">Gerenciar <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+  <div class="stat-card stat-card-purple">
+    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+    <div class="stat-info"><h3><%= totalTickets %></h3><p>Total Chamados</p></div>
+    <div class="stat-trend"><a href="/tickets" class="stat-link">Ver todos <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+  <div class="stat-card stat-card-teal">
+    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+    <div class="stat-info"><h3><%= totalQueues %></h3><p>Filas Ativas</p></div>
+    <div class="stat-trend"><a href="/queues" class="stat-link">Gerenciar <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+  <div class="stat-card stat-card-green">
+    <div class="stat-icon"><i class="fas fa-stopwatch"></i></div>
+    <div class="stat-info"><h3><%= totalSLAs %></h3><p>SLAs Configurados</p></div>
+    <div class="stat-trend"><a href="/admin/slas" class="stat-link">Gerenciar <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+  <div class="stat-card stat-card-red">
+    <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+    <div class="stat-info"><h3><%= openTickets %></h3><p>Chamados Abertos</p></div>
+  </div>
+  <div class="stat-card stat-card-dark">
+    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="stat-info"><h3><%= slaBreached %></h3><p>SLAs Violados</p></div>
+    <div class="stat-trend"><a href="/tickets?slaStatus=breached" class="stat-link">Ver <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <div class="admin-section-card">
+    <div class="card-header">
+      <h3><i class="fas fa-users"></i> Distribuição de Usuários</h3>
+    </div>
+    <div class="user-distribution">
+      <div class="ud-item">
+        <span class="ud-icon ud-admin">👑</span>
+        <div class="ud-info"><span>Administradores</span><strong><%= adminCount %></strong></div>
+        <div class="ud-bar"><div style="width: <%= totalUsers > 0 ? (adminCount/totalUsers*100) : 0 %>%; background:#ef4444"></div></div>
+      </div>
+      <div class="ud-item">
+        <span class="ud-icon ud-agent">🎧</span>
+        <div class="ud-info"><span>Agentes</span><strong><%= agentCount %></strong></div>
+        <div class="ud-bar"><div style="width: <%= totalUsers > 0 ? (agentCount/totalUsers*100) : 0 %>%; background:#6366f1"></div></div>
+      </div>
+      <div class="ud-item">
+        <span class="ud-icon ud-client">👤</span>
+        <div class="ud-info"><span>Clientes</span><strong><%= clientCount %></strong></div>
+        <div class="ud-bar"><div style="width: <%= totalUsers > 0 ? (clientCount/totalUsers*100) : 0 %>%; background:#22c55e"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-section-card">
+    <div class="card-header"><h3><i class="fas fa-stopwatch"></i> SLAs Configurados</h3><a href="/admin/slas" class="card-link">Gerenciar</a></div>
+    <div class="sla-list-admin">
+      <% slas.forEach(sla => { %>
+      <div class="sla-admin-item">
+        <div class="sai-color" style="background: <%= sla.color %>"></div>
+        <div class="sai-info">
+          <span class="sai-name"><%= sla.name %></span>
+          <small>Resposta: <%= sla.responseTime.hours %>h | Resolução: <%= sla.resolutionTime.hours %>h</small>
+        </div>
+        <span class="badge badge-<%= sla.priorityBadge %>"><%= sla.priorityDisplay %></span>
+        <a href="/admin/slas/<%= sla._id %>/edit" class="btn-icon"><i class="fas fa-edit"></i></a>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="admin-section-card">
+    <div class="card-header"><h3><i class="fas fa-user-plus"></i> Novos Usuários</h3><a href="/users" class="card-link">Ver todos</a></div>
+    <div class="recent-users-list">
+      <% recentUsers.forEach(u => { %>
+      <div class="rul-item">
+        <div class="user-avatar-sm" style="background: <%= u.role === 'admin' ? '#ef4444' : u.role === 'agent' ? '#6366f1' : '#22c55e' %>">
+          <%= u.name.charAt(0) %>
+        </div>
+        <div class="rul-info">
+          <span><%= u.name %></span>
+          <small><%= u.email %></small>
+        </div>
+        <span class="badge badge-<%= u.roleBadgeColor %>"><%= u.roleDisplay %></span>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="admin-quick-actions">
+    <div class="card-header"><h3><i class="fas fa-bolt"></i> Ações Rápidas</h3></div>
+    <div class="qa-grid">
+      <a href="/queues/create" class="qa-btn"><i class="fas fa-plus"></i> Nova Fila</a>
+      <a href="/admin/slas/create" class="qa-btn"><i class="fas fa-stopwatch"></i> Novo SLA</a>
+      <a href="/tickets/create" class="qa-btn"><i class="fas fa-ticket-alt"></i> Novo Chamado</a>
+      <a href="/admin/reports" class="qa-btn"><i class="fas fa-chart-bar"></i> Relatórios</a>
+    </div>
+  </div>
+</div>

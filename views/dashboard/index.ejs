@@ -1,0 +1,349 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Bem-vindo, <%= user.name.split(' ')[0] %>! Aqui está o resumo do sistema.</p>
+  </div>
+  <div class="page-header-right">
+    <a href="/tickets/create" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Novo Chamado
+    </a>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card stat-card-blue">
+    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+    <div class="stat-info">
+      <h3><%= totalTickets %></h3>
+      <p>Total de Chamados</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets" class="stat-link">Ver todos <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-orange">
+    <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+    <div class="stat-info">
+      <h3><%= openTickets %></h3>
+      <p>Abertos</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets?status=open" class="stat-link">Ver abertos <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-purple">
+    <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+    <div class="stat-info">
+      <h3><%= inProgressTickets %></h3>
+      <p>Em Progresso</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets?status=in_progress" class="stat-link">Ver em progresso <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-green">
+    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-info">
+      <h3><%= resolvedTickets %></h3>
+      <p>Resolvidos</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets?status=resolved" class="stat-link">Ver resolvidos <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <% if (user.role !== 'client') { %>
+  <div class="stat-card stat-card-red">
+    <div class="stat-icon"><i class="fas fa-fire"></i></div>
+    <div class="stat-info">
+      <h3><%= criticalTickets %></h3>
+      <p>Críticos Abertos</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets?priority=critical" class="stat-link">Ver críticos <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-dark">
+    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="stat-info">
+      <h3><%= slaBreachedTickets %></h3>
+      <p>SLA Violado</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/tickets?slaStatus=breached" class="stat-link">Ver violados <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user.role === 'admin') { %>
+  <div class="stat-card stat-card-indigo">
+    <div class="stat-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-info">
+      <h3><%= totalUsers %></h3>
+      <p>Usuários</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/users" class="stat-link">Gerenciar <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-teal">
+    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+    <div class="stat-info">
+      <h3><%= totalQueues %></h3>
+      <p>Filas Ativas</p>
+    </div>
+    <div class="stat-trend">
+      <a href="/queues" class="stat-link">Gerenciar <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+  <% } %>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-header">
+      <h3><i class="fas fa-chart-line"></i> Chamados — Últimos 7 Dias</h3>
+    </div>
+    <div class="chart-body">
+      <canvas id="dailyChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card chart-small">
+    <div class="chart-header">
+      <h3><i class="fas fa-chart-pie"></i> Por Prioridade</h3>
+    </div>
+    <div class="chart-body">
+      <canvas id="priorityChart" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card chart-small">
+    <div class="chart-header">
+      <h3><i class="fas fa-chart-donut"></i> Por Status</h3>
+    </div>
+    <div class="chart-body">
+      <canvas id="statusChart" height="220"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Queue Stats + Recent Tickets -->
+<div class="bottom-grid">
+  <!-- Queue Stats -->
+  <% if (queueStats && queueStats.length > 0) { %>
+  <div class="queue-stats-card">
+    <div class="card-header">
+      <h3><i class="fas fa-layer-group"></i> Status das Filas</h3>
+      <% if (user.role === 'admin') { %>
+      <a href="/queues" class="card-link">Gerenciar</a>
+      <% } %>
+    </div>
+    <div class="queue-list">
+      <% queueStats.forEach(queue => { %>
+      <div class="queue-item">
+        <div class="queue-icon" style="background: <%= queue.color %>20; color: <%= queue.color %>">
+          <%= queue.icon || '📋' %>
+        </div>
+        <div class="queue-details">
+          <div class="queue-name-row">
+            <span class="queue-name"><%= queue.name %></span>
+            <% if (queue.slaBreached > 0) { %>
+            <span class="badge badge-danger"><%= queue.slaBreached %> SLA</span>
+            <% } %>
+          </div>
+          <div class="queue-counts">
+            <span class="qc-open"><i class="fas fa-circle"></i> <%= queue.open %> abertos</span>
+            <span class="qc-prog"><i class="fas fa-circle"></i> <%= queue.inProgress %> em progresso</span>
+          </div>
+        </div>
+        <div class="queue-progress">
+          <div class="qp-bar" style="background: <%= queue.color %>33">
+            <div class="qp-fill" style="width: <%= queue.open + queue.inProgress > 0 ? Math.min(100, (queue.open / (queue.open + queue.inProgress)) * 100) : 0 %>%; background: <%= queue.color %>"></div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Recent Tickets -->
+  <div class="recent-tickets-card">
+    <div class="card-header">
+      <h3><i class="fas fa-clock"></i> Chamados Recentes</h3>
+      <a href="/tickets" class="card-link">Ver todos</a>
+    </div>
+    <div class="recent-list">
+      <% if (recentTickets.length === 0) { %>
+        <div class="empty-state-sm">
+          <i class="fas fa-inbox"></i>
+          <p>Nenhum chamado ainda</p>
+        </div>
+      <% } %>
+      <% recentTickets.forEach(ticket => { %>
+      <a href="/tickets/<%= ticket._id %>" class="recent-ticket-item">
+        <div class="rt-priority priority-dot-<%= ticket.priority %>"></div>
+        <div class="rt-info">
+          <span class="rt-number"><%= ticket.ticketNumber %></span>
+          <span class="rt-title"><%= ticket.title.substring(0, 45) %><%= ticket.title.length > 45 ? '...' : '' %></span>
+          <div class="rt-meta">
+            <% if (ticket.queue) { %>
+            <span class="rt-queue" style="color: <%= ticket.queue.color %>">
+              <%= ticket.queue.icon %> <%= ticket.queue.name %>
+            </span>
+            <% } %>
+            <span class="rt-time"><i class="fas fa-clock"></i> <%= ticket.timeElapsed %></span>
+          </div>
+        </div>
+        <div class="rt-status">
+          <span class="badge badge-<%= ticket.statusBadge %>"><%= ticket.statusDisplay %></span>
+          <% if (ticket.slaStatus === 'breached') { %>
+          <span class="sla-indicator sla-breached" title="SLA Violado"><i class="fas fa-exclamation"></i></span>
+          <% } else if (ticket.slaStatus === 'warning') { %>
+          <span class="sla-indicator sla-warning" title="SLA em Alerta"><i class="fas fa-clock"></i></span>
+          <% } %>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<!-- Top Agents (Admin only) -->
+<% if (user.role === 'admin' && topAgents.length > 0) { %>
+<div class="agents-performance-card">
+  <div class="card-header">
+    <h3><i class="fas fa-medal"></i> Top Agentes — Últimos 30 Dias</h3>
+  </div>
+  <div class="agents-table">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Agente</th>
+          <th>Resolvidos</th>
+          <th>Tempo Médio</th>
+          <th>Performance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% topAgents.forEach((agent, i) => { %>
+        <tr>
+          <td>
+            <span class="rank-badge rank-<%= i + 1 %>">
+              <%= i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1) %>
+            </span>
+          </td>
+          <td>
+            <div class="agent-info">
+              <div class="user-avatar-xs">
+                <%= agent._id.name ? agent._id.name.charAt(0) : '?' %>
+              </div>
+              <span><%= agent._id.name || 'N/A' %></span>
+            </div>
+          </td>
+          <td><strong><%= agent.resolved %></strong></td>
+          <td><%= Math.round(agent.avgTime / 3600000) %>h</td>
+          <td>
+            <div class="perf-bar">
+              <div class="perf-fill" style="width: <%= Math.min(100, (agent.resolved / topAgents[0].resolved) * 100) %>%"></div>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<script>
+const dailyData = <%- dailyTickets %>;
+const priorityData = <%- priorityData %>;
+const statusData = <%- statusData %>;
+
+// Daily Chart
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+new Chart(dailyCtx, {
+  type: 'line',
+  data: {
+    labels: dailyData.map(d => d.label),
+    datasets: [{
+      label: 'Chamados',
+      data: dailyData.map(d => d.count),
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99,102,241,0.1)',
+      borderWidth: 2.5,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#6366f1',
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#1e293b' } },
+      x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+    }
+  }
+});
+
+// Priority Chart
+const priorityMap = { low: 'Baixa', medium: 'Média', high: 'Alta', critical: 'Crítica' };
+const priorityColors = { low: '#22c55e', medium: '#f59e0b', high: '#ef4444', critical: '#1f2937' };
+const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+new Chart(priorityCtx, {
+  type: 'doughnut',
+  data: {
+    labels: priorityData.map(d => priorityMap[d._id] || d._id),
+    datasets: [{
+      data: priorityData.map(d => d.count),
+      backgroundColor: priorityData.map(d => priorityColors[d._id] || '#6366f1'),
+      borderWidth: 0,
+      hoverOffset: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } }
+    }
+  }
+});
+
+// Status Chart
+const statusMap = { open: 'Aberto', in_progress: 'Em Progresso', waiting: 'Aguardando', resolved: 'Resolvido', closed: 'Fechado' };
+const statusColors = { open: '#6366f1', in_progress: '#f59e0b', waiting: '#06b6d4', resolved: '#22c55e', closed: '#64748b' };
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+  type: 'doughnut',
+  data: {
+    labels: statusData.map(d => statusMap[d._id] || d._id),
+    datasets: [{
+      data: statusData.map(d => d.count),
+      backgroundColor: statusData.map(d => statusColors[d._id] || '#6366f1'),
+      borderWidth: 0,
+      hoverOffset: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } }
+    }
+  }
+});
+</script>

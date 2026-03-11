@@ -1,0 +1,228 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Meu Perfil</h1>
+  </div>
+</div>
+
+<div class="profile-layout">
+
+  <!-- Profile Card -->
+  <div class="profile-sidebar">
+    <div class="profile-card">
+      <div class="profile-avatar" style="background: <%= profileUser.role === 'admin' ? '#ef4444' : profileUser.role === 'agent' ? '#6366f1' : '#22c55e' %>">
+        <%= profileUser.initials %>
+      </div>
+      <h2 class="profile-name"><%= profileUser.name %></h2>
+      <p class="profile-email"><%= profileUser.email %></p>
+      <span class="badge badge-<%= profileUser.roleBadgeColor %> profile-role">
+        <%= profileUser.roleDisplay %>
+      </span>
+
+      <div class="profile-stats">
+        <div class="ps-item">
+          <span class="ps-number"><%= myTickets %></span>
+          <span class="ps-label">Chamados</span>
+        </div>
+        <div class="ps-item">
+          <span class="ps-number"><%= resolvedTickets %></span>
+          <span class="ps-label">Resolvidos</span>
+        </div>
+        <% if (agentStats) { %>
+        <div class="ps-item">
+          <span class="ps-number"><%= agentStats.assigned %></span>
+          <span class="ps-label">Em aberto</span>
+        </div>
+        <% } %>
+      </div>
+
+      <% if (profileUser.queues && profileUser.queues.length > 0) { %>
+      <div class="profile-queues">
+        <h4>Filas atribuídas</h4>
+        <% profileUser.queues.forEach(q => { %>
+        <span class="queue-pill" style="color: <%= q.color %>; border-color: <%= q.color %>">
+          <%= q.icon %> <%= q.name %>
+        </span>
+        <% }) %>
+      </div>
+      <% } %>
+    </div>
+
+    <% if (agentStats) { %>
+    <div class="agent-stats-card">
+      <h4><i class="fas fa-chart-line"></i> Desempenho</h4>
+      <div class="ast-item">
+        <span>Chamados ativos</span>
+        <strong><%= agentStats.assigned %></strong>
+      </div>
+      <div class="ast-item">
+        <span>Resolvidos por mim</span>
+        <strong class="text-success"><%= agentStats.resolvedByMe %></strong>
+      </div>
+      <div class="ast-item">
+        <span>SLAs violados</span>
+        <strong class="text-danger"><%= agentStats.slaBreached %></strong>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Profile Form -->
+  <div class="profile-main">
+    <div class="profile-tabs">
+      <button class="ptab active" onclick="showTab('info', this)">
+        <i class="fas fa-user"></i> Informações
+      </button>
+      <button class="ptab" onclick="showTab('notifications', this)">
+        <i class="fas fa-bell"></i> Notificações
+      </button>
+      <button class="ptab" onclick="showTab('security', this)">
+        <i class="fas fa-lock"></i> Segurança
+      </button>
+    </div>
+
+    <!-- Info Tab -->
+    <div id="tab-info" class="tab-content active">
+      <form action="/users/profile?_method=PUT" method="POST">
+        <div class="form-section">
+          <h3 class="form-section-title">Dados Pessoais</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nome completo</label>
+              <input type="text" name="name" class="form-control" value="<%= profileUser.name %>" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" value="<%= profileUser.email %>" readonly disabled>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Telefone</label>
+              <input type="text" name="phone" class="form-control" value="<%= profileUser.phone || '' %>" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-group">
+              <label>Empresa</label>
+              <input type="text" name="company" class="form-control" value="<%= profileUser.company || '' %>" placeholder="Nome da empresa">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Departamento</label>
+            <input type="text" name="department" class="form-control" value="<%= profileUser.department || '' %>" placeholder="Ex: TI, RH, Financeiro">
+          </div>
+          <div class="form-group">
+            <label>Bio</label>
+            <textarea name="bio" class="form-control" rows="3" placeholder="Conte um pouco sobre você..."><%= profileUser.bio || '' %></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar alterações
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div id="tab-notifications" class="tab-content">
+      <form action="/users/profile?_method=PUT" method="POST">
+        <div class="form-section">
+          <h3 class="form-section-title">Preferências de Notificação</h3>
+          <div class="notification-toggles">
+            <div class="notif-toggle-item">
+              <div>
+                <strong>Notificações por email</strong>
+                <p>Receber notificações no email cadastrado</p>
+              </div>
+              <label class="toggle-label">
+                <input type="checkbox" name="notifEmail" class="toggle-input" <%= profileUser.notifications && profileUser.notifications.email ? 'checked' : '' %>>
+                <span class="toggle-switch"></span>
+              </label>
+            </div>
+            <div class="notif-toggle-item">
+              <div>
+                <strong>Alerta de SLA</strong>
+                <p>Notificar quando SLA estiver prestes a vencer</p>
+              </div>
+              <label class="toggle-label">
+                <input type="checkbox" name="notifSla" class="toggle-input" <%= profileUser.notifications && profileUser.notifications.slaWarning ? 'checked' : '' %>>
+                <span class="toggle-switch"></span>
+              </label>
+            </div>
+            <div class="notif-toggle-item">
+              <div>
+                <strong>Novos chamados</strong>
+                <p>Notificar quando um chamado for aberto na fila</p>
+              </div>
+              <label class="toggle-label">
+                <input type="checkbox" name="notifNewTicket" class="toggle-input" <%= profileUser.notifications && profileUser.notifications.newTicket ? 'checked' : '' %>>
+                <span class="toggle-switch"></span>
+              </label>
+            </div>
+            <div class="notif-toggle-item">
+              <div>
+                <strong>Atualizações de chamados</strong>
+                <p>Notificar sobre mudanças nos chamados</p>
+              </div>
+              <label class="toggle-label">
+                <input type="checkbox" name="notifUpdate" class="toggle-input" <%= profileUser.notifications && profileUser.notifications.ticketUpdate ? 'checked' : '' %>>
+                <span class="toggle-switch"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar preferências
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Security Tab -->
+    <div id="tab-security" class="tab-content">
+      <form action="/users/profile/password?_method=PUT" method="POST">
+        <div class="form-section">
+          <h3 class="form-section-title">Alterar Senha</h3>
+          <div class="form-group">
+            <label>Senha atual</label>
+            <input type="password" name="currentPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>Nova senha</label>
+            <input type="password" name="newPassword" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres">
+          </div>
+          <div class="form-group">
+            <label>Confirmar nova senha</label>
+            <input type="password" name="confirmPassword" class="form-control" required placeholder="Repita a nova senha">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-key"></i> Alterar senha
+          </button>
+        </div>
+      </form>
+
+      <div class="security-info">
+        <h4><i class="fas fa-info-circle"></i> Informações de segurança</h4>
+        <div class="si-item">
+          <span>Último login:</span>
+          <strong><%= profileUser.lastLogin ? new Date(profileUser.lastLogin).toLocaleString('pt-BR') : 'Nunca' %></strong>
+        </div>
+        <div class="si-item">
+          <span>Conta criada:</span>
+          <strong><%= new Date(profileUser.createdAt).toLocaleDateString('pt-BR') %></strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tabName, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  btn.classList.add('active');
+}
+</script>

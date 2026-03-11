@@ -1,0 +1,227 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="/tickets" class="back-link"><i class="fas fa-arrow-left"></i> Chamados</a>
+    <h1 class="page-title">Novo Chamado</h1>
+  </div>
+</div>
+
+<div class="form-layout">
+  <div class="form-main">
+    <div class="form-card">
+      <form action="/tickets" method="POST" enctype="multipart/form-data" id="createTicketForm">
+
+        <div class="form-section">
+          <h3 class="form-section-title"><i class="fas fa-info-circle"></i> Informações do Chamado</h3>
+
+          <div class="form-group">
+            <label for="title">Título do chamado *</label>
+            <input type="text" id="title" name="title" class="form-control"
+              placeholder="Descreva brevemente o problema..." required maxlength="200">
+            <small class="form-hint">Máximo 200 caracteres</small>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descrição detalhada *</label>
+            <textarea id="description" name="description" class="form-control" rows="6"
+              placeholder="Descreva detalhadamente o problema, incluindo:&#10;• O que aconteceu&#10;• Quando ocorreu&#10;• Passos para reproduzir&#10;• O que você esperava que acontecesse"
+              required></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title"><i class="fas fa-cog"></i> Configurações</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="queueId">Fila de atendimento *</label>
+              <select id="queueId" name="queueId" class="form-control" required onchange="loadQueueInfo(this.value)">
+                <option value="">Selecione uma fila...</option>
+                <% queues.forEach(queue => { %>
+                <option value="<%= queue._id %>" data-color="<%= queue.color %>" data-icon="<%= queue.icon %>">
+                  <%= queue.icon %> <%= queue.name %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="priority">Prioridade</label>
+              <select id="priority" name="priority" class="form-control">
+                <option value="low">🟢 Baixa — SLA 72h</option>
+                <option value="medium" selected>🟡 Média — SLA 24h</option>
+                <option value="high">🔴 Alta — SLA 8h</option>
+                <option value="critical">⚫ Crítica — SLA 4h</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="category">Categoria</label>
+              <select id="category" name="category" class="form-control">
+                <option value="">Selecione uma categoria...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Data limite (opcional)</label>
+              <input type="datetime-local" id="dueDate" name="dueDate" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tags">Tags (separadas por vírgula)</label>
+            <input type="text" id="tags" name="tags" class="form-control"
+              placeholder="ex: urgente, producao, login">
+          </div>
+        </div>
+
+        <!-- SLA Preview -->
+        <div id="slaPreview" class="sla-preview" style="display:none">
+          <div class="sp-header">
+            <i class="fas fa-stopwatch"></i> <strong>Previsão de SLA</strong>
+          </div>
+          <div class="sp-content">
+            <div class="sp-item">
+              <span class="sp-label">Primeira resposta:</span>
+              <span id="spResponse" class="sp-value">—</span>
+            </div>
+            <div class="sp-item">
+              <span class="sp-label">Resolução:</span>
+              <span id="spResolution" class="sp-value">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title"><i class="fas fa-paperclip"></i> Anexos</h3>
+          <div class="file-upload-area" id="fileUploadArea">
+            <input type="file" id="attachments" name="attachments" multiple
+              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip"
+              class="file-input" onchange="updateFileList(this)">
+            <div class="file-upload-placeholder">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Arraste arquivos aqui ou <strong>clique para selecionar</strong></p>
+              <small>JPG, PNG, PDF, DOC, ZIP • Máximo 10MB por arquivo</small>
+            </div>
+            <div id="fileList" class="file-list"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/tickets" class="btn btn-ghost">
+            <i class="fas fa-times"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Abrir Chamado
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="form-help">
+    <div class="help-card">
+      <h4><i class="fas fa-lightbulb"></i> Dicas para um bom chamado</h4>
+      <ul class="help-list">
+        <li><i class="fas fa-check"></i> Seja específico no título</li>
+        <li><i class="fas fa-check"></i> Inclua capturas de tela se possível</li>
+        <li><i class="fas fa-check"></i> Descreva os passos para reproduzir</li>
+        <li><i class="fas fa-check"></i> Informe a urgência real</li>
+        <li><i class="fas fa-check"></i> Inclua mensagens de erro</li>
+      </ul>
+    </div>
+
+    <div class="help-card priority-guide">
+      <h4><i class="fas fa-flag"></i> Guia de Prioridade</h4>
+      <div class="pg-item">
+        <span class="pg-badge pg-critical">⚫ Crítica</span>
+        <span>Sistema fora do ar, perda de dados</span>
+      </div>
+      <div class="pg-item">
+        <span class="pg-badge pg-high">🔴 Alta</span>
+        <span>Funcionalidade principal comprometida</span>
+      </div>
+      <div class="pg-item">
+        <span class="pg-badge pg-medium">🟡 Média</span>
+        <span>Funcionalidade afetada com contorno</span>
+      </div>
+      <div class="pg-item">
+        <span class="pg-badge pg-low">🟢 Baixa</span>
+        <span>Melhorias, dúvidas, questões menores</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const queues = <%- JSON.stringify(queues.map(q => ({ _id: q._id, name: q.name, categories: q.categories || [], sla: q.sla }))) %>;
+
+function loadQueueInfo(queueId) {
+  const queue = queues.find(q => q._id === queueId);
+  const catSelect = document.getElementById('category');
+
+  catSelect.innerHTML = '<option value="">Selecione uma categoria...</option>';
+
+  if (queue && queue.categories) {
+    queue.categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      catSelect.appendChild(opt);
+    });
+  }
+
+  // Update SLA preview based on priority
+  updateSLAPreview();
+}
+
+function updateSLAPreview() {
+  const priority = document.getElementById('priority').value;
+  const slaMap = {
+    low: { response: 24, resolution: 72 },
+    medium: { response: 8, resolution: 24 },
+    high: { response: 2, resolution: 8 },
+    critical: { response: 0.5, resolution: 4 }
+  };
+
+  const sla = slaMap[priority];
+  const now = new Date();
+  const responseDate = new Date(now.getTime() + sla.response * 3600000);
+  const resolutionDate = new Date(now.getTime() + sla.resolution * 3600000);
+
+  const fmt = (d) => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+  document.getElementById('spResponse').textContent = fmt(responseDate) + ' (' + (sla.response < 1 ? '30min' : sla.response + 'h') + ')';
+  document.getElementById('spResolution').textContent = fmt(resolutionDate) + ' (' + sla.resolution + 'h)';
+  document.getElementById('slaPreview').style.display = 'block';
+}
+
+document.getElementById('priority').addEventListener('change', updateSLAPreview);
+updateSLAPreview();
+
+function updateFileList(input) {
+  const list = document.getElementById('fileList');
+  list.innerHTML = '';
+  Array.from(input.files).forEach(file => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    const size = file.size > 1024 * 1024
+      ? (file.size / 1024 / 1024).toFixed(1) + ' MB'
+      : (file.size / 1024).toFixed(0) + ' KB';
+    item.innerHTML = `<i class="fas fa-file"></i> <span>${file.name}</span> <small>${size}</small>`;
+    list.appendChild(item);
+  });
+}
+
+// Drag and drop
+const area = document.getElementById('fileUploadArea');
+area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  area.classList.remove('dragover');
+  const input = document.getElementById('attachments');
+  input.files = e.dataTransfer.files;
+  updateFileList(input);
+});
+</script>

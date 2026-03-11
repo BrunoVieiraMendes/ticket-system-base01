@@ -1,0 +1,173 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="/queues" class="back-link"><i class="fas fa-arrow-left"></i> Filas</a>
+    <h1 class="page-title"><%= queue ? 'Editar Fila' : 'Nova Fila' %></h1>
+  </div>
+</div>
+
+<div class="form-layout">
+  <div class="form-main">
+    <form action="<%= queue ? '/queues/' + queue._id + '?_method=PUT' : '/queues' %>" method="POST" class="form-card">
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome da fila *</label>
+            <input type="text" name="name" class="form-control"
+              value="<%= queue ? queue.name : '' %>"
+              placeholder="Ex: Suporte Técnico" required>
+          </div>
+          <div class="form-group">
+            <label>Ícone</label>
+            <div class="icon-picker">
+              <input type="text" name="icon" id="iconInput" class="form-control"
+                value="<%= queue ? queue.icon : '📋' %>"
+                placeholder="Emoji" maxlength="4">
+              <div class="icon-presets">
+                <% ['📋','🛠️','💻','🖥️','📞','🔧','⚡','🚀','🔒','📊','💡','🎯'].forEach(icon => { %>
+                <button type="button" class="icon-preset" onclick="document.getElementById('iconInput').value='<%= icon %>'"><%= icon %></button>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea name="description" class="form-control" rows="2"
+            placeholder="Descreva o propósito desta fila..."><%= queue ? queue.description || '' : '' %></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cor da fila</label>
+            <div class="color-picker-row">
+              <input type="color" name="color" class="form-control color-input"
+                value="<%= queue ? queue.color : '#6366f1' %>">
+              <div class="color-presets">
+                <% ['#6366f1','#8b5cf6','#ec4899','#ef4444','#f59e0b','#22c55e','#06b6d4','#3b82f6'].forEach(c => { %>
+                <button type="button" class="color-preset" style="background: <%= c %>"
+                  onclick="document.querySelector('input[name=color]').value='<%= c %>'"></button>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>SLA *</label>
+            <select name="slaId" class="form-control" required>
+              <option value="">Selecione um SLA...</option>
+              <% slas.forEach(sla => { %>
+              <option value="<%= sla._id %>"
+                <%= queue && queue.sla && queue.sla.toString() === sla._id.toString() ? 'selected' : '' %>>
+                <%= sla.priorityIcon %> <%= sla.name %> (Resposta: <%= sla.responseTime.hours %>h | Resolução: <%= sla.resolutionTime.hours %>h)
+              </option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Categorias (separadas por vírgula)</label>
+          <input type="text" name="categories" class="form-control"
+            value="<%= queue && queue.categories ? queue.categories.join(', ') : '' %>"
+            placeholder="Ex: Hardware, Software, Rede, Email">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-users"></i> Agentes</h3>
+        <div class="agents-checkbox-grid">
+          <% agents.forEach(agent => { %>
+          <label class="agent-checkbox">
+            <input type="checkbox" name="agentIds" value="<%= agent._id %>"
+              <%= queue && queue.agents && queue.agents.some(a => a._id ? a._id.toString() === agent._id.toString() : a.toString() === agent._id.toString()) ? 'checked' : '' %>>
+            <div class="acb-content">
+              <div class="user-avatar-xs"><%= agent.name.charAt(0) %></div>
+              <div>
+                <span class="acb-name"><%= agent.name %></span>
+                <small class="acb-email"><%= agent.email %></small>
+              </div>
+            </div>
+          </label>
+          <% }) %>
+          <% if (agents.length === 0) { %>
+          <p class="text-muted">Nenhum agente cadastrado. <a href="/users">Criar agentes</a></p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-robot"></i> Auto-atribuição</h3>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" name="autoAssignEnabled" class="toggle-input" id="autoAssign"
+              <%= queue && queue.autoAssign && queue.autoAssign.enabled ? 'checked' : '' %>
+              onchange="document.getElementById('autoAssignOptions').style.display=this.checked?'block':'none'">
+            <span class="toggle-switch"></span>
+            Habilitar auto-atribuição
+          </label>
+        </div>
+        <div id="autoAssignOptions" style="display: <%= queue && queue.autoAssign && queue.autoAssign.enabled ? 'block' : 'none' %>">
+          <div class="form-group mt-16">
+            <label>Método de distribuição</label>
+            <select name="autoAssignMethod" class="form-control">
+              <option value="round-robin" <%= queue && queue.autoAssign && queue.autoAssign.method === 'round-robin' ? 'selected' : '' %>>
+                🔄 Round Robin — distribui igualmente
+              </option>
+              <option value="random" <%= queue && queue.autoAssign && queue.autoAssign.method === 'random' ? 'selected' : '' %>>
+                🎲 Aleatório
+              </option>
+              <option value="least-busy" <%= queue && queue.autoAssign && queue.autoAssign.method === 'least-busy' ? 'selected' : '' %>>
+                ⚖️ Menos ocupado
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-level-up-alt"></i> Escalação</h3>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" name="escalationEnabled" class="toggle-input" id="escalation"
+              <%= queue && queue.escalation && queue.escalation.enabled ? 'checked' : '' %>
+              onchange="document.getElementById('escalationOptions').style.display=this.checked?'block':'none'">
+            <span class="toggle-switch"></span>
+            Habilitar escalação automática
+          </label>
+        </div>
+        <div id="escalationOptions" style="display: <%= queue && queue.escalation && queue.escalation.enabled ? 'block' : 'none' %>">
+          <div class="form-group mt-16">
+            <label>Escalar após (horas sem atribuição)</label>
+            <input type="number" name="escalationHours" class="form-control" min="1" max="168"
+              value="<%= queue && queue.escalation ? queue.escalation.afterHours : 4 %>">
+          </div>
+        </div>
+      </div>
+
+      <% if (queue) { %>
+      <div class="form-section">
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" name="isActive" class="toggle-input"
+              <%= queue.isActive ? 'checked' : '' %>>
+            <span class="toggle-switch"></span>
+            Fila ativa
+          </label>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="form-actions">
+        <a href="/queues" class="btn btn-ghost">
+          <i class="fas fa-times"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> <%= queue ? 'Salvar alterações' : 'Criar fila' %>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

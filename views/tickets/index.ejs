@@ -1,0 +1,203 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Chamados</h1>
+    <p class="page-subtitle">Total de <%= total %> chamados</p>
+  </div>
+  <div class="page-header-right">
+    <a href="/tickets/create" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Novo Chamado
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <form action="/tickets" method="GET" class="filter-form" id="filterForm">
+    <div class="filter-group">
+      <input type="text" name="search" placeholder="🔍 Buscar por título ou número..."
+        class="form-control filter-search" value="<%= filters.search || '' %>">
+    </div>
+
+    <div class="filter-group">
+      <select name="status" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="all" <%= !filters.status || filters.status === 'all' ? 'selected' : '' %>>Todos os status</option>
+        <option value="open" <%= filters.status === 'open' ? 'selected' : '' %>>Aberto</option>
+        <option value="in_progress" <%= filters.status === 'in_progress' ? 'selected' : '' %>>Em Progresso</option>
+        <option value="waiting" <%= filters.status === 'waiting' ? 'selected' : '' %>>Aguardando</option>
+        <option value="resolved" <%= filters.status === 'resolved' ? 'selected' : '' %>>Resolvido</option>
+        <option value="closed" <%= filters.status === 'closed' ? 'selected' : '' %>>Fechado</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select name="priority" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="all" <%= !filters.priority || filters.priority === 'all' ? 'selected' : '' %>>Toda prioridade</option>
+        <option value="critical" <%= filters.priority === 'critical' ? 'selected' : '' %>>⚫ Crítica</option>
+        <option value="high" <%= filters.priority === 'high' ? 'selected' : '' %>>🔴 Alta</option>
+        <option value="medium" <%= filters.priority === 'medium' ? 'selected' : '' %>>🟡 Média</option>
+        <option value="low" <%= filters.priority === 'low' ? 'selected' : '' %>>🟢 Baixa</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select name="slaStatus" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="all">Todo SLA</option>
+        <option value="ok" <%= filters.slaStatus === 'ok' ? 'selected' : '' %>>✅ No Prazo</option>
+        <option value="warning" <%= filters.slaStatus === 'warning' ? 'selected' : '' %>>⚠️ Atenção</option>
+        <option value="breached" <%= filters.slaStatus === 'breached' ? 'selected' : '' %>>🚨 Violado</option>
+      </select>
+    </div>
+
+    <% if (queues.length > 0) { %>
+    <div class="filter-group">
+      <select name="queue" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="all">Todas as filas</option>
+        <% queues.forEach(q => { %>
+        <option value="<%= q._id %>" <%= filters.queue === q._id.toString() ? 'selected' : '' %>><%= q.icon %> <%= q.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <% } %>
+
+    <button type="submit" class="btn btn-secondary filter-btn">
+      <i class="fas fa-filter"></i>
+    </button>
+
+    <% if (Object.values(filters).some(v => v && v !== 'all')) { %>
+    <a href="/tickets" class="btn btn-ghost filter-btn" title="Limpar filtros">
+      <i class="fas fa-times"></i>
+    </a>
+    <% } %>
+  </form>
+</div>
+
+<!-- Tickets Table -->
+<div class="table-card">
+  <% if (tickets.length === 0) { %>
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+      <h3>Nenhum chamado encontrado</h3>
+      <p>Tente ajustar os filtros ou crie um novo chamado</p>
+      <a href="/tickets/create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Novo Chamado
+      </a>
+    </div>
+  <% } else { %>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Título</th>
+          <th>Prioridade</th>
+          <th>Status</th>
+          <th>Fila</th>
+          <th>Responsável</th>
+          <th>SLA</th>
+          <th>Abertura</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tickets.forEach(ticket => { %>
+        <tr class="table-row <%= ticket.slaStatus === 'breached' ? 'row-breached' : ticket.slaStatus === 'warning' ? 'row-warning' : '' %>">
+          <td>
+            <span class="ticket-number"><%= ticket.ticketNumber %></span>
+          </td>
+          <td>
+            <div class="ticket-title-cell">
+              <a href="/tickets/<%= ticket._id %>" class="ticket-link"><%= ticket.title.substring(0, 50) %><%= ticket.title.length > 50 ? '...' : '' %></a>
+              <% if (ticket.tags && ticket.tags.length > 0) { %>
+              <div class="ticket-tags">
+                <% ticket.tags.slice(0, 2).forEach(tag => { %>
+                <span class="tag"><%= tag %></span>
+                <% }) %>
+              </div>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <span class="priority-badge priority-<%= ticket.priority %>">
+              <%= ticket.priorityIcon %> <%= ticket.priorityDisplay %>
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-<%= ticket.statusBadge %>">
+              <%= ticket.statusDisplay %>
+            </span>
+          </td>
+          <td>
+            <% if (ticket.queue) { %>
+            <span class="queue-pill" style="border-color: <%= ticket.queue.color %>; color: <%= ticket.queue.color %>">
+              <%= ticket.queue.icon %> <%= ticket.queue.name %>
+            </span>
+            <% } else { %>
+            <span class="text-muted">—</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (ticket.assignedTo) { %>
+            <div class="assignee-cell">
+              <div class="user-avatar-xs"><%= ticket.assignedTo.name.charAt(0) %></div>
+              <span><%= ticket.assignedTo.name.split(' ')[0] %></span>
+            </div>
+            <% } else { %>
+            <span class="unassigned">Não atribuído</span>
+            <% } %>
+          </td>
+          <td>
+            <div class="sla-cell">
+              <span class="sla-badge sla-<%= ticket.slaStatus %>">
+                <%= ticket.slaStatusDisplay %>
+              </span>
+              <% if (ticket.slaDeadlines && ticket.slaDeadlines.resolutionDeadline) { %>
+              <div class="sla-mini-bar">
+                <div class="sla-mini-fill sla-fill-<%= ticket.slaStatus %>"
+                     style="width: <%= ticket.slaPercentage %>%"></div>
+              </div>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <span class="time-cell" title="<%= new Date(ticket.createdAt).toLocaleString('pt-BR') %>">
+              <%= ticket.timeElapsed %>
+            </span>
+          </td>
+          <td>
+            <a href="/tickets/<%= ticket._id %>" class="btn-icon" title="Ver detalhes">
+              <i class="fas fa-eye"></i>
+            </a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+  <div class="pagination">
+    <% if (page > 1) { %>
+    <a href="/tickets?page=<%= page - 1 %>&<%= new URLSearchParams(filters).toString() %>" class="page-btn">
+      <i class="fas fa-chevron-left"></i>
+    </a>
+    <% } %>
+
+    <% for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) { %>
+    <a href="/tickets?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>"
+      class="page-btn <%= i === page ? 'active' : '' %>">
+      <%= i %>
+    </a>
+    <% } %>
+
+    <% if (page < totalPages) { %>
+    <a href="/tickets?page=<%= page + 1 %>&<%= new URLSearchParams(filters).toString() %>" class="page-btn">
+      <i class="fas fa-chevron-right"></i>
+    </a>
+    <% } %>
+
+    <span class="page-info">Página <%= page %> de <%= totalPages %></span>
+  </div>
+  <% } %>
+  <% } %>
+</div>

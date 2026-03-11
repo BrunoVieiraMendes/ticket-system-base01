@@ -1,0 +1,89 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Usuários</h1>
+    <p class="page-subtitle"><%= total %> usuários cadastrados</p>
+  </div>
+  <div class="page-header-right">
+    <a href="/register" class="btn btn-primary" target="_blank">
+      <i class="fas fa-user-plus"></i> Novo Usuário
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <form action="/users" method="GET" class="filter-form" id="filterForm">
+    <div class="filter-group">
+      <input type="text" name="search" placeholder="🔍 Buscar por nome ou email..."
+        class="form-control filter-search" value="<%= filters.search || '' %>">
+    </div>
+    <div class="filter-group">
+      <select name="role" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="all" <%= !filters.role || filters.role === 'all' ? 'selected' : '' %>>Todos os perfis</option>
+        <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>👑 Admin</option>
+        <option value="agent" <%= filters.role === 'agent' ? 'selected' : '' %>>🎧 Agente</option>
+        <option value="client" <%= filters.role === 'client' ? 'selected' : '' %>>👤 Cliente</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <select name="status" class="form-control filter-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="">Todos</option>
+        <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Ativos</option>
+        <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inativos</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary filter-btn">
+      <i class="fas fa-filter"></i>
+    </button>
+  </form>
+</div>
+
+<div class="users-grid">
+  <% users.forEach(user => { %>
+  <div class="user-card <%= !user.isActive ? 'user-inactive' : '' %>">
+    <div class="uc-header">
+      <div class="user-avatar-lg" style="background: <%= user.role === 'admin' ? '#ef4444' : user.role === 'agent' ? '#6366f1' : '#22c55e' %>">
+        <%= user.initials %>
+      </div>
+      <div class="uc-status">
+        <span class="status-dot <%= user.isActive ? 'status-active' : 'status-inactive' %>"></span>
+      </div>
+    </div>
+    <div class="uc-info">
+      <h3><%= user.name %></h3>
+      <p><%= user.email %></p>
+      <% if (user.company) { %><small><%= user.company %><%= user.department ? ' · ' + user.department : '' %></small><% } %>
+    </div>
+    <div class="uc-meta">
+      <span class="badge badge-<%= user.roleBadgeColor %>"><%= user.roleDisplay %></span>
+      <% if (user.queues && user.queues.length > 0) { %>
+      <span class="badge badge-secondary"><%= user.queues.length %> fila<%= user.queues.length > 1 ? 's' : '' %></span>
+      <% } %>
+    </div>
+    <div class="uc-footer">
+      <a href="/users/<%= user._id %>" class="btn btn-secondary btn-sm">
+        <i class="fas fa-edit"></i> Gerenciar
+      </a>
+    </div>
+  </div>
+  <% }) %>
+
+  <% if (users.length === 0) { %>
+  <div class="empty-state full-width">
+    <div class="empty-icon"><i class="fas fa-users"></i></div>
+    <h3>Nenhum usuário encontrado</h3>
+  </div>
+  <% } %>
+</div>
+
+<!-- Pagination -->
+<% if (totalPages > 1) { %>
+<div class="pagination">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/users?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>"
+    class="page-btn <%= i === page ? 'active' : '' %>">
+    <%= i %>
+  </a>
+  <% } %>
+</div>
+<% } %>

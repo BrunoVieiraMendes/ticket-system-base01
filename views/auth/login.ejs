@@ -1,0 +1,154 @@
+<div class="auth-container">
+  <div class="auth-panel">
+    <div class="auth-brand">
+      <div class="auth-logo">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <h1>TicketFlow</h1>
+      <p>Sistema de Gestão de Chamados</p>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <h2>Bem-vindo de volta</h2>
+        <p>Entre com suas credenciais para acessar</p>
+      </div>
+
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i> <%= error %>
+        </div>
+      <% } %>
+      <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i> <%= error_msg %>
+        </div>
+      <% } %>
+      <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i> <%= success_msg %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="email">
+            <i class="fas fa-envelope"></i> Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            placeholder="seu@email.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            <i class="fas fa-lock"></i> Senha
+          </label>
+          <div class="input-password">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            >
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+              <i class="fas fa-eye" id="password-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-auth">
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Não tem uma conta? <a href="/register">Criar conta</a></p>
+      </div>
+
+      <div class="auth-demo">
+        <p><strong>Demo rápido:</strong></p>
+        <div class="demo-buttons">
+          <button onclick="fillDemo('admin@ticket.com','admin123')" class="demo-btn demo-admin">
+            <i class="fas fa-crown"></i> Admin
+          </button>
+          <button onclick="fillDemo('carlos@ticket.com','agent123')" class="demo-btn demo-agent">
+            <i class="fas fa-headset"></i> Agente
+          </button>
+          <button onclick="fillDemo('joao@cliente.com','client123')" class="demo-btn demo-client">
+            <i class="fas fa-user"></i> Cliente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-visual">
+    <div class="visual-content">
+      <div class="visual-stats">
+        <div class="visual-stat">
+          <span class="vs-number">98%</span>
+          <span class="vs-label">SLA cumprido</span>
+        </div>
+        <div class="visual-stat">
+          <span class="vs-number">< 2h</span>
+          <span class="vs-label">Tempo médio</span>
+        </div>
+        <div class="visual-stat">
+          <span class="vs-number">4.8★</span>
+          <span class="vs-label">Satisfação</span>
+        </div>
+      </div>
+      <div class="visual-cards">
+        <div class="vc-card vc-card-1">
+          <div class="vc-dot vc-critical"></div>
+          <div class="vc-info">
+            <span>Servidor fora do ar</span>
+            <small>SLA: 4h • Crítico</small>
+          </div>
+          <span class="vc-badge">Resolvido</span>
+        </div>
+        <div class="vc-card vc-card-2">
+          <div class="vc-dot vc-high"></div>
+          <div class="vc-info">
+            <span>Falha no login</span>
+            <small>SLA: 8h • Alta</small>
+          </div>
+          <span class="vc-badge">Em progresso</span>
+        </div>
+        <div class="vc-card vc-card-3">
+          <div class="vc-dot vc-medium"></div>
+          <div class="vc-info">
+            <span>Relatório com erro</span>
+            <small>SLA: 24h • Média</small>
+          </div>
+          <span class="vc-badge vc-open">Aberto</span>
+        </div>
+      </div>
+      <h2>Gestão inteligente de chamados</h2>
+      <p>SLA automático, atribuição por filas e relatórios em tempo real</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  const eye = document.getElementById(id + '-eye');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  eye.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+function fillDemo(email, pass) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = pass;
+}
+</script>

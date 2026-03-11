@@ -1,0 +1,111 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">Relatórios</h1>
+  </div>
+</div>
+
+<div class="report-filters">
+  <form action="/admin/reports" method="GET" class="filter-form">
+    <div class="filter-group">
+      <label>De:</label>
+      <input type="date" name="from" class="form-control" value="<%= dateFrom %>">
+    </div>
+    <div class="filter-group">
+      <label>Até:</label>
+      <input type="date" name="to" class="form-control" value="<%= dateTo %>">
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Gerar</button>
+  </form>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card stat-card-blue">
+    <div class="stat-icon"><i class="fas fa-plus-circle"></i></div>
+    <div class="stat-info"><h3><%= totalCreated %></h3><p>Chamados Abertos</p></div>
+  </div>
+  <div class="stat-card stat-card-green">
+    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-info"><h3><%= totalResolved %></h3><p>Chamados Resolvidos</p></div>
+  </div>
+  <div class="stat-card stat-card-red">
+    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="stat-info"><h3><%= totalBreached %></h3><p>SLAs Violados</p></div>
+  </div>
+  <div class="stat-card stat-card-purple">
+    <div class="stat-icon"><i class="fas fa-stopwatch"></i></div>
+    <div class="stat-info"><h3><%= avgHours %>h</h3><p>Tempo Médio Resolução</p></div>
+  </div>
+  <div class="stat-card stat-card-green">
+    <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+    <div class="stat-info"><h3><%= slaRate %>%</h3><p>Cumprimento do SLA</p></div>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card chart-small">
+    <div class="chart-header"><h3><i class="fas fa-chart-pie"></i> Por Prioridade</h3></div>
+    <div class="chart-body"><canvas id="priorityChart" height="220"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header"><h3><i class="fas fa-chart-bar"></i> Por Fila</h3></div>
+    <div class="chart-body"><canvas id="queueChart" height="200"></canvas></div>
+  </div>
+</div>
+
+<% if (byAgent.length > 0) { %>
+<div class="table-card">
+  <div class="card-header"><h3><i class="fas fa-medal"></i> Desempenho por Agente</h3></div>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Agente</th><th>Resolvidos</th><th>Tempo Médio</th><th>Performance</th></tr></thead>
+    <tbody>
+      <% byAgent.forEach((a, i) => { %>
+      <tr>
+        <td><span class="rank-badge"><%= i + 1 %></span></td>
+        <td>
+          <div class="agent-info">
+            <div class="user-avatar-xs"><%= a._id && a._id.name ? a._id.name.charAt(0) : '?' %></div>
+            <span><%= a._id ? a._id.name : 'N/A' %></span>
+          </div>
+        </td>
+        <td><strong><%= a.resolved %></strong></td>
+        <td><%= a.avgTime ? Math.round(a.avgTime / 3600000) : 0 %>h</td>
+        <td>
+          <div class="perf-bar">
+            <div class="perf-fill" style="width: <%= byAgent[0].resolved > 0 ? Math.round((a.resolved/byAgent[0].resolved)*100) : 0 %>%"></div>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<script>
+const priorityRaw = <%- byPriority %>;
+const queueRaw = <%- byQueue %>;
+const pMap = {low:'Baixa',medium:'Média',high:'Alta',critical:'Crítica'};
+const pColors = {low:'#22c55e',medium:'#f59e0b',high:'#ef4444',critical:'#1f2937'};
+
+new Chart(document.getElementById('priorityChart'), {
+  type: 'doughnut',
+  data: {
+    labels: priorityRaw.map(d => pMap[d._id]||d._id),
+    datasets: [{ data: priorityRaw.map(d=>d.count), backgroundColor: priorityRaw.map(d=>pColors[d._id]||'#6366f1'), borderWidth: 0 }]
+  },
+  options: { responsive:true, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{color:'#94a3b8'} } } }
+});
+
+new Chart(document.getElementById('queueChart'), {
+  type: 'bar',
+  data: {
+    labels: queueRaw.map(d => d.name),
+    datasets: [{ label: 'Chamados', data: queueRaw.map(d=>d.count), backgroundColor: queueRaw.map(d=>d.color||'#6366f1'), borderRadius: 6 }]
+  },
+  options: {
+    responsive:true,
+    plugins:{ legend:{ display:false } },
+    scales:{ y:{beginAtZero:true, ticks:{color:'#94a3b8'}, grid:{color:'#1e293b'}}, x:{ticks:{color:'#94a3b8'}, grid:{display:false}} }
+  }
+});
+</script>

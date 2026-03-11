@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | TicketFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <%- include('../partials/header') %>
+
+    <!-- Page Content -->
+    <main class="main-content">
+      <!-- Flash Messages -->
+      <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success alert-dismissible">
+          <i class="fas fa-check-circle"></i>
+          <%= success_msg %>
+          <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>
+      <% } %>
+      <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible">
+          <i class="fas fa-exclamation-circle"></i>
+          <%= error_msg %>
+          <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>
+      <% } %>
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible">
+          <i class="fas fa-exclamation-circle"></i>
+          <%= error %>
+          <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>
+      <% } %>
+
+      <%- body %>
+    </main>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.2/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

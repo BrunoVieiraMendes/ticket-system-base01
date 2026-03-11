@@ -1,0 +1,85 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="/admin" class="back-link"><i class="fas fa-arrow-left"></i> Admin</a>
+    <h1 class="page-title">Gerenciar SLAs</h1>
+  </div>
+  <div class="page-header-right">
+    <a href="/admin/slas/create" class="btn btn-primary"><i class="fas fa-plus"></i> Novo SLA</a>
+  </div>
+</div>
+
+<div class="sla-cards-grid">
+  <% const priorityOrder = ['critical','high','medium','low']; %>
+  <% slas.sort((a,b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)).forEach(sla => { %>
+  <div class="sla-detail-card" style="border-top: 4px solid <%= sla.color %>">
+    <div class="sdc-header">
+      <div>
+        <h3><%= sla.name %></h3>
+        <p><%= sla.description || 'Sem descrição' %></p>
+      </div>
+      <span class="badge badge-<%= sla.priorityBadge %>"><%= sla.priorityIcon %> <%= sla.priorityDisplay %></span>
+    </div>
+
+    <div class="sdc-times">
+      <div class="sdc-time-item">
+        <div class="sdc-time-icon" style="color: <%= sla.color %>"><i class="fas fa-reply"></i></div>
+        <div>
+          <span class="sdc-time-label">Primeira Resposta</span>
+          <strong class="sdc-time-value">
+            <%= sla.responseTime.hours > 0 ? sla.responseTime.hours + 'h ' : '' %><%= sla.responseTime.minutes > 0 ? sla.responseTime.minutes + 'min' : '' %>
+            <%= sla.responseTime.hours === 0 && sla.responseTime.minutes === 0 ? 'Imediato' : '' %>
+          </strong>
+        </div>
+      </div>
+      <div class="sdc-divider"></div>
+      <div class="sdc-time-item">
+        <div class="sdc-time-icon" style="color: <%= sla.color %>"><i class="fas fa-check-circle"></i></div>
+        <div>
+          <span class="sdc-time-label">Resolução</span>
+          <strong class="sdc-time-value">
+            <%= sla.resolutionTime.hours %>h<%= sla.resolutionTime.minutes > 0 ? ' ' + sla.resolutionTime.minutes + 'min' : '' %>
+          </strong>
+        </div>
+      </div>
+      <div class="sdc-divider"></div>
+      <div class="sdc-time-item">
+        <div class="sdc-time-icon" style="color: #f59e0b"><i class="fas fa-bell"></i></div>
+        <div>
+          <span class="sdc-time-label">Alerta em</span>
+          <strong class="sdc-time-value"><%= sla.warningThreshold %>% do tempo</strong>
+        </div>
+      </div>
+    </div>
+
+    <% if (sla.businessHours && sla.businessHours.enabled) { %>
+    <div class="sdc-bh">
+      <i class="fas fa-clock"></i> Horário comercial: <%= sla.businessHours.start %> – <%= sla.businessHours.end %>
+    </div>
+    <% } %>
+
+    <div class="sdc-footer">
+      <span class="<%= sla.isActive ? 'text-success' : 'text-muted' %>">
+        <i class="fas fa-circle" style="font-size:8px"></i> <%= sla.isActive ? 'Ativo' : 'Inativo' %>
+      </span>
+      <div>
+        <a href="/admin/slas/<%= sla._id %>/edit" class="btn btn-secondary btn-sm">
+          <i class="fas fa-edit"></i> Editar
+        </a>
+        <form action="/admin/slas/<%= sla._id %>?_method=DELETE" method="POST" style="display:inline"
+              onsubmit="return confirm('Excluir SLA?')">
+          <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<% if (slas.length === 0) { %>
+<div class="empty-state">
+  <div class="empty-icon"><i class="fas fa-stopwatch"></i></div>
+  <h3>Nenhum SLA configurado</h3>
+  <p>Configure os prazos de atendimento para suas filas</p>
+  <a href="/admin/slas/create" class="btn btn-primary"><i class="fas fa-plus"></i> Criar primeiro SLA</a>
+</div>
+<% } %>

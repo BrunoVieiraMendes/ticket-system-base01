@@ -1,0 +1,89 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <i class="fas fa-ticket-alt"></i>
+      </div>
+      <span class="logo-text">TicketFlow</span>
+    </div>
+    <button class="sidebar-toggle-btn" id="sidebarToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar-sm" style="background: <%= user && user.role === 'admin' ? '#ef4444' : user && user.role === 'agent' ? '#6366f1' : '#22c55e' %>">
+      <%= user ? user.name.charAt(0).toUpperCase() : '?' %>
+    </div>
+    <div class="user-info">
+      <span class="user-name"><%= user ? user.name.split(' ')[0] : '' %></span>
+      <span class="user-role-badge role-<%= user ? user.role : '' %>">
+        <%= user && user.role === 'admin' ? 'Admin' : user && user.role === 'agent' ? 'Agente' : 'Cliente' %>
+      </span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <span class="nav-section-title">Principal</span>
+      <a href="/dashboard" class="nav-item <%= locals.title && locals.title.includes('Dashboard') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="/tickets" class="nav-item <%= locals.title && (locals.title.includes('Chamados') || locals.title.includes('TKT')) ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-ticket-alt"></i></span>
+        <span class="nav-label">Chamados</span>
+        <span class="nav-badge" id="openTicketsBadge"></span>
+      </a>
+      <a href="/tickets/create" class="nav-item <%= locals.title && locals.title.includes('Novo Chamado') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-plus-circle"></i></span>
+        <span class="nav-label">Novo Chamado</span>
+      </a>
+    </div>
+
+    <% if (user && (user.role === 'admin' || user.role === 'agent')) { %>
+    <div class="nav-section">
+      <span class="nav-section-title">Gerenciamento</span>
+      <% if (user.role === 'admin') { %>
+      <a href="/queues" class="nav-item <%= locals.title && locals.title.includes('Filas') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+        <span class="nav-label">Filas</span>
+      </a>
+      <a href="/users" class="nav-item <%= locals.title && locals.title.includes('Usuários') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-label">Usuários</span>
+      </a>
+      <% } %>
+    </div>
+    <% } %>
+
+    <% if (user && user.role === 'admin') { %>
+    <div class="nav-section">
+      <span class="nav-section-title">Administração</span>
+      <a href="/admin" class="nav-item <%= locals.title && locals.title.includes('Administração') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+        <span class="nav-label">Painel Admin</span>
+      </a>
+      <a href="/admin/slas" class="nav-item <%= locals.title && locals.title.includes('SLA') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-stopwatch"></i></span>
+        <span class="nav-label">SLAs</span>
+      </a>
+      <a href="/admin/reports" class="nav-item <%= locals.title && locals.title.includes('Relatórios') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
+        <span class="nav-label">Relatórios</span>
+      </a>
+    </div>
+    <% } %>
+
+    <div class="nav-section nav-bottom">
+      <a href="/users/profile" class="nav-item <%= locals.title && locals.title.includes('Perfil') ? 'active' : '' %>">
+        <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
+        <span class="nav-label">Meu Perfil</span>
+      </a>
+      <a href="/logout" class="nav-item nav-logout">
+        <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+        <span class="nav-label">Sair</span>
+      </a>
+    </div>
+  </nav>
+</aside>

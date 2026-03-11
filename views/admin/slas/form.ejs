@@ -1,0 +1,138 @@
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="/admin/slas" class="back-link"><i class="fas fa-arrow-left"></i> SLAs</a>
+    <h1 class="page-title"><%= sla ? 'Editar SLA' : 'Novo SLA' %></h1>
+  </div>
+</div>
+
+<div class="form-layout">
+  <div class="form-main">
+    <form action="<%= sla ? '/admin/slas/' + sla._id + '?_method=PUT' : '/admin/slas' %>" method="POST" class="form-card">
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-info-circle"></i> Informações</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome *</label>
+            <input type="text" name="name" class="form-control"
+              value="<%= sla ? sla.name : '' %>" placeholder="Ex: SLA Alta Prioridade" required>
+          </div>
+          <div class="form-group">
+            <label>Prioridade *</label>
+            <select name="priority" class="form-control" required>
+              <option value="">Selecione...</option>
+              <% availablePriorities.forEach(p => { %>
+              <option value="<%= p %>" <%= sla && sla.priority === p ? 'selected' : '' %>>
+                <%= p === 'low' ? '🟢 Baixa' : p === 'medium' ? '🟡 Média' : p === 'high' ? '🔴 Alta' : '⚫ Crítica' %>
+              </option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" name="description" class="form-control"
+              value="<%= sla ? sla.description || '' : '' %>" placeholder="Descrição opcional">
+          </div>
+          <div class="form-group">
+            <label>Cor</label>
+            <div class="color-picker-row">
+              <input type="color" name="color" class="form-control color-input"
+                value="<%= sla ? sla.color : '#6366f1' %>">
+              <div class="color-presets">
+                <% ['#22c55e','#f59e0b','#ef4444','#1f2937','#6366f1','#8b5cf6','#06b6d4','#ec4899'].forEach(c => { %>
+                <button type="button" class="color-preset" style="background: <%= c %>"
+                  onclick="document.querySelector('input[name=color]').value='<%= c %>'"></button>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-reply"></i> Tempo de Primeira Resposta</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Horas</label>
+            <input type="number" name="responseHours" class="form-control" min="0" max="168"
+              value="<%= sla ? sla.responseTime.hours : 0 %>">
+          </div>
+          <div class="form-group">
+            <label>Minutos</label>
+            <input type="number" name="responseMinutes" class="form-control" min="0" max="59"
+              value="<%= sla ? sla.responseTime.minutes : 0 %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-check-circle"></i> Tempo de Resolução</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Horas *</label>
+            <input type="number" name="resolutionHours" class="form-control" min="0" max="720" required
+              value="<%= sla ? sla.resolutionTime.hours : 24 %>">
+          </div>
+          <div class="form-group">
+            <label>Minutos</label>
+            <input type="number" name="resolutionMinutes" class="form-control" min="0" max="59"
+              value="<%= sla ? sla.resolutionTime.minutes : 0 %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-bell"></i> Limiar de Alerta</h3>
+        <div class="form-group">
+          <label>Alertar quando atingir <span id="thresholdVal"><%= sla ? sla.warningThreshold : 80 %></span>% do tempo</label>
+          <input type="range" name="warningThreshold" class="form-range" min="50" max="95" step="5"
+            value="<%= sla ? sla.warningThreshold : 80 %>"
+            oninput="document.getElementById('thresholdVal').textContent=this.value">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title"><i class="fas fa-clock"></i> Horário Comercial (opcional)</h3>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" name="businessHoursEnabled" class="toggle-input"
+              <%= sla && sla.businessHours && sla.businessHours.enabled ? 'checked' : '' %>
+              onchange="document.getElementById('bhOptions').style.display=this.checked?'block':'none'">
+            <span class="toggle-switch"></span>
+            Contar apenas horário comercial
+          </label>
+        </div>
+        <div id="bhOptions" style="display:<%= sla && sla.businessHours && sla.businessHours.enabled ? 'block' : 'none' %>">
+          <div class="form-row mt-16">
+            <div class="form-group">
+              <label>Início</label>
+              <input type="time" name="businessStart" class="form-control"
+                value="<%= sla && sla.businessHours ? sla.businessHours.start : '08:00' %>">
+            </div>
+            <div class="form-group">
+              <label>Fim</label>
+              <input type="time" name="businessEnd" class="form-control"
+                value="<%= sla && sla.businessHours ? sla.businessHours.end : '18:00' %>">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if (sla) { %>
+      <div class="toggle-row">
+        <label class="toggle-label">
+          <input type="checkbox" name="isActive" class="toggle-input" <%= sla.isActive ? 'checked' : '' %>>
+          <span class="toggle-switch"></span>
+          SLA ativo
+        </label>
+      </div>
+      <% } %>
+
+      <div class="form-actions">
+        <a href="/admin/slas" class="btn btn-ghost"><i class="fas fa-times"></i> Cancelar</a>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar SLA</button>
+      </div>
+    </form>
+  </div>
+</div>
